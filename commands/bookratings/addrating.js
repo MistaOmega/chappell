@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getDatabase } = require('../../database/dbUtil');
+const { getRatings } = require('../../database/db_tables');
+const { getBookTitleByISBN } = require('../../utils/bookUtils');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,29 +30,10 @@ module.exports = {
             return;
         }
 
-        let bookTitle = '';
-        try {
-            const response = await fetch(`https://openlibrary.org/api/books?bibkeys=ISBN:${isbn}&format=json&jscmd=data`);
-            const data = await response.json();
-            bookTitle = data[`ISBN:${isbn}`]?.title || 'Unknown Title';
-        } catch (error) {
-            console.error(error);
-            await interaction.reply('There was an error fetching the book title.');
-            return;
-        }
+        const bookTitle = await getBookTitleByISBN(isbn);
 
-        const db = getDatabase(guildId, 'bookratings');
+        const db = getRatings(guildId, 'bookratings');
         db.serialize(() => {
-            db.run(`CREATE TABLE IF NOT EXISTS ratings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id TEXT NOT NULL,
-                book_title TEXT,
-                isbn TEXT,
-                rating INTEGER NOT NULL,
-                spicy_rating INTEGER,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`);
-
             db.get(`SELECT id FROM ratings WHERE user_id = ? AND (isbn = ? OR book_title = ?)`, [userId, isbn, bookTitle], (err, row) => {
                 if (err) {
                     console.error(err);
