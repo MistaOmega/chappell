@@ -3,7 +3,7 @@ const { getVotes } = require('../../database/db_tables');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('getlastvote')
+        .setName('books_getlastvote')
         .setDescription('Gets the book that won the last vote'),
     async execute(interaction) {
         const guildId = interaction.guild.id;

@@ -3,7 +3,7 @@ const { SlashCommandBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('quote')
-        .setDescription('Shares a daily quote from a famous book'),
+        .setDescription('Shares a daily quote'),
     async execute(interaction) {
         try {
             const response = await fetch('https://zenquotes.io/api/random');

@@ -4,7 +4,7 @@ const { getBookTitleByISBN } = require('../../utils/bookUtils');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('startvote')
+        .setName('books_startvote')
         .setDescription('Starts a new book vote')
         .addIntegerOption(option =>
             option.setName('duration')

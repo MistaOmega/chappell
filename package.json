@@ -10,10 +10,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "date-fns": "^4.1.0",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "node-fetch": "^3.3.2",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "timers": "^0.1.1"
   },
   "devDependencies": {
     "eslint": "^9.15.0"

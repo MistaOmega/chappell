@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { getRatings } = require('../../database/db_tables');
+const { getBookRatings } = require('../../database/db_tables');
 const { getBookTitleByISBN } = require('../../utils/bookUtils');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('addrating')
+        .setName('books_addrating')
         .setDescription('Adds or updates a rating for a book')
         .addStringOption(option =>
             option.setName('isbn')
@@ -32,15 +32,15 @@ module.exports = {
 
         const bookTitle = await getBookTitleByISBN(isbn);
 
-        const db = getRatings(guildId, 'bookratings');
+        const db = getBookRatings(guildId);
         db.serialize(() => {
-            db.get(`SELECT id FROM ratings WHERE user_id = ? AND (isbn = ? OR book_title = ?)`, [userId, isbn, bookTitle], (err, row) => {
+            db.get(`SELECT id FROM book_ratings WHERE user_id = ? AND (isbn = ? OR book_title = ?)`, [userId, isbn, bookTitle], (err, row) => {
                 if (err) {
                     console.error(err);
                     interaction.reply('There was an error while checking the existing rating.');
                     db.close();
                 } else if (row) {
-                    db.run(`UPDATE ratings SET rating = ?, spicy_rating = ?, isbn = ?, timestamp = CURRENT_TIMESTAMP WHERE id = ?`, [rating, spicyRating, isbn, row.id], function(err) {
+                    db.run(`UPDATE book_ratings SET rating = ?, spicy_rating = ?, isbn = ?, timestamp = CURRENT_TIMESTAMP WHERE id = ?`, [rating, spicyRating, isbn, row.id], function(err) {
                         if (err) {
                             console.error(err);
                             interaction.reply('There was an error while updating the rating.');
@@ -50,7 +50,7 @@ module.exports = {
                         db.close();
                     });
                 } else {
-                    db.run(`INSERT INTO ratings (user_id, book_title, isbn, rating, spicy_rating) VALUES (?, ?, ?, ?, ?)`, [userId, bookTitle, isbn, rating, spicyRating], function(err) {
+                    db.run(`INSERT INTO book_ratings (user_id, book_title, isbn, rating, spicy_rating) VALUES (?, ?, ?, ?, ?)`, [userId, bookTitle, isbn, rating, spicyRating], function(err) {
                         if (err) {
                             console.error(err);
                             interaction.reply('There was an error while adding the rating.');
