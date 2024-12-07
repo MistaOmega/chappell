@@ -36,26 +36,26 @@ module.exports = {
                 clearInterval(reminderInterval);
             }
             reminderInterval = setInterval(() => {
-                interaction.channel.send(`${interaction.user}, it's time to drink water!`);
+                interaction.user.send(`It's time to drink water!`);
             }, interval * 60000);
-            await interaction.reply(`Started drinking water reminders every ${interval} minutes.`);
+            await interaction.reply({ content: `Started drinking water reminders every ${interval} minutes.`, ephemeral: true });
         } else if (subcommand === 'update') {
             if (reminderInterval) {
                 clearInterval(reminderInterval);
                 reminderInterval = setInterval(() => {
-                    interaction.channel.send(`${interaction.user}, it's time to drink water!`);
+                    interaction.user.send(`It's time to drink water!`);
                 }, interval * 60000);
-                await interaction.reply(`Updated drinking water reminders to every ${interval} minutes.`);
+                await interaction.reply({ content: `Updated drinking water reminders to every ${interval} minutes.`, ephemeral: true });
             } else {
-                await interaction.reply('You need to start the reminders first using `/drink start`.');
+                await interaction.reply({ content: 'You need to start the reminders first using `/drink start`.', ephemeral: true });
             }
         } else if (subcommand === 'stop') {
             if (reminderInterval) {
                 clearInterval(reminderInterval);
                 reminderInterval = null;
-                await interaction.reply('Stopped drinking water reminders.');
+                await interaction.reply({ content: 'Stopped drinking water reminders.', ephemeral: true });
             } else {
-                await interaction.reply('No active drinking water reminders to stop.');
+                await interaction.reply({ content: 'No active drinking water reminders to stop.', ephemeral: true });
             }
         }
     },
