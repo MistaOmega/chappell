@@ -58,7 +58,15 @@ module.exports = {
                 .setTimestamp();
 
             for (const [index, row] of rows.entries()) {
-                const user = interaction.guild.members.cache.get(row.user_id);
+                let user = interaction.guild.members.cache.get(row.user_id);
+                if (!user) {
+                    try {
+                        user = await interaction.guild.members.fetch(row.user_id);
+                    } catch (error) {
+                        console.error(`Failed to fetch user with ID ${row.user_id}:`, error);
+                        user = null;
+                    }
+                }
                 const username = user ? user.displayName : 'Unknown User';
                 const totalWaterMl = row.total_water;
                 const totalWaterFlOz = (totalWaterMl / 29.5735).toFixed(2);
