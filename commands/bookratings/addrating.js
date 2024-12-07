@@ -30,11 +30,11 @@ module.exports = {
             return;
         }
 
-        const bookTitle = await getBookTitleByISBN(isbn);
+        const bookInfo = await getBookTitleByISBN(isbn);
 
         const db = getBookRatings(guildId);
         db.serialize(() => {
-            db.get(`SELECT id FROM book_ratings WHERE user_id = ? AND (isbn = ? OR book_title = ?)`, [userId, isbn, bookTitle], (err, row) => {
+            db.get(`SELECT id FROM book_ratings WHERE user_id = ? AND (isbn = ? OR book_title = ?)`, [userId, isbn, bookInfo.title], (err, row) => {
                 if (err) {
                     console.error(err);
                     interaction.reply('There was an error while checking the existing rating.');
@@ -45,17 +45,17 @@ module.exports = {
                             console.error(err);
                             interaction.reply('There was an error while updating the rating.');
                         } else {
-                            interaction.reply(`Updated rating of ${rating} for "${bookTitle}".${spicyRating ? ` Spicy rating of ${'🌶️'.repeat(spicyRating)}.` : ''}`);
+                            interaction.reply(`Updated rating of ${rating} for "${bookInfo.title}".${spicyRating ? ` Spicy rating of ${'🌶️'.repeat(spicyRating)}.` : ''}`);
                         }
                         db.close();
                     });
                 } else {
-                    db.run(`INSERT INTO book_ratings (user_id, book_title, isbn, rating, spicy_rating) VALUES (?, ?, ?, ?, ?)`, [userId, bookTitle, isbn, rating, spicyRating], function(err) {
+                    db.run(`INSERT INTO book_ratings (user_id, book_title, isbn, rating, spicy_rating) VALUES (?, ?, ?, ?, ?)`, [userId, bookInfo, isbn, rating, spicyRating], function(err) {
                         if (err) {
                             console.error(err);
                             interaction.reply('There was an error while adding the rating.');
                         } else {
-                            interaction.reply(`Rating of ${rating} for "${bookTitle}" added successfully.${spicyRating ? ` Spicy rating of ${'🌶️'.repeat(spicyRating)}.` : ''}`);
+                            interaction.reply(`Rating of ${rating} for "${bookInfo.title}" added successfully.${spicyRating ? ` Spicy rating of ${'🌶️'.repeat(spicyRating)}.` : ''}`);
                         }
                         db.close();
                     });
