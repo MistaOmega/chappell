@@ -24,10 +24,10 @@ module.exports = {
             return;
         }
 
-        const bookTitle = title || await getBookTitleByISBN(isbn);
+        const bookTitle = title || await getBookTitleByISBN(isbn).title;
 
         const db = getVotes(guildId);
-        db.get(`SELECT id FROM votes WHERE book_title = ? OR isbn = ?`, [bookTitle.title, isbn], (err, row) => {
+        db.get(`SELECT id FROM votes WHERE book_title = ? OR isbn = ?`, [bookTitle, isbn], (err, row) => {
             if (err) {
                 console.error(err);
                 interaction.reply('There was an error adding the book to the vote.');
@@ -40,16 +40,16 @@ module.exports = {
                         console.error(err);
                         interaction.reply('There was an error updating the vote count.');
                     } else {
-                        interaction.reply(`The vote count for "${bookTitle.title}" has been incremented.`);
+                        interaction.reply(`The vote count for "${bookTitle}" has been incremented.`);
                     }
                 });
             } else {
-                db.run(`INSERT INTO votes (guild_id, book_title, isbn, votes) VALUES (?, ?, ?, 1)`, [guildId, bookTitle.title, isbn], function(err) {
+                db.run(`INSERT INTO votes (guild_id, book_title, isbn, votes) VALUES (?, ?, ?, 1)`, [guildId, bookTitle, isbn], function(err) {
                     if (err) {
                         console.error(err);
                         interaction.reply('There was an error adding the book to the vote.');
                     } else {
-                        interaction.reply(`The book "${bookTitle.title}" has been added to the vote with 1 vote.`);
+                        interaction.reply(`The book "${bookTitle}" has been added to the vote with 1 vote.`);
                     }
                 });
             }
