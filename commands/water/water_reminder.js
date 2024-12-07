@@ -5,7 +5,7 @@ let reminderInterval;
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('drink')
+        .setName('water_reminder')
         .setDescription('Manage your drinking water reminders')
         .addSubcommand(subcommand =>
             subcommand
