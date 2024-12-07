@@ -32,7 +32,7 @@ module.exports = {
                 timeCondition = `datetime('now', '-${timespan.slice(0, -1)} day')`;
                 break;
             case 'W':
-                timeCondition = `datetime('now', '-${timespan.slice(0, -1)} week')`;
+                timeCondition = `datetime('now', '-${timespan.slice(0, -1)} day', '-7 days')`;
                 break;
             case 'M':
                 timeCondition = `datetime('now', '-${timespan.slice(0, -1)} month')`;
@@ -54,7 +54,7 @@ module.exports = {
             const embed = new EmbedBuilder()
                 .setTitle('Water Drinking Leaderboard')
                 .setColor(0xE7ACCF)
-                .setDescription(`Top 5 users for the past ${timespan}`)
+                .setDescription(`Top 5 users for the past ${timespan.slice(0, -1)} ${unit === 'H' ? 'hours' : unit === 'D' ? 'days' : unit === 'W' ? 'weeks' : 'months'}`)
                 .setTimestamp();
 
             for (const [index, row] of rows.entries()) {
