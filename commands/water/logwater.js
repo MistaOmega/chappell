@@ -15,7 +15,8 @@ module.exports = {
                 .setRequired(true)
                 .addChoices(
                     { name: 'Milliliters', value: 'ml' },
-                    { name: 'Fluid Ounces', value: 'fl_oz' }
+                    { name: 'Fluid Ounces', value: 'fl_oz' },
+                    { name: 'Bowl of Soup', value: 'bowl' }
                 )),
     async execute(interaction) {
         const amount = interaction.options.getInteger('amount');
@@ -28,14 +29,18 @@ module.exports = {
         if (unit === 'fl_oz') {
             amountInMl = amount * 29.5735; // Convert fluid ounces to milliliters
         }
+        if (unit === 'bowl') {
+            amountInMl = 285 ; // about 10oz
+        }
+
 
         db.run(`INSERT INTO water_leaderboard (user_id, water_amount) VALUES (?, ?)`, [userId, amountInMl], (err) => {
             if (err) {
                 console.error(err);
-                interaction.reply('There was an error while logging your water intake.');
+                interaction.reply('There was an error while logging your water intake.', {ephemeral: true});
                 return;
             }
-            interaction.reply(`Logged ${amountInMl.toFixed(2)}ml of water.`);
+            interaction.reply(`Logged ${amountInMl.toFixed(2)}ml of water.`, { ephemeral: true });
         });
     },
 };
