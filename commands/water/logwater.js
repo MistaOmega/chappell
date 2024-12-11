@@ -37,10 +37,16 @@ module.exports = {
         db.run(`INSERT INTO water_leaderboard (user_id, water_amount) VALUES (?, ?)`, [userId, amountInMl], (err) => {
             if (err) {
                 console.error(err);
-                interaction.reply('There was an error while logging your water intake.', {ephemeral: true});
+                interaction.reply({ content: 'There was an error while logging your water intake.', ephemeral: true });
                 return;
             }
-            interaction.reply(`Logged ${amountInMl.toFixed(2)}ml of water.`, { ephemeral: true });
+            let message;
+            if (unit === 'bowl') {
+                message = `Logged 1 bowl of soup.`;
+            } else {
+                message = `Logged ${unit === 'ml' ? amount : amount / 29.5735} ${unit === 'ml' ? 'ml of water' : 'fl oz of water'}.`;
+            }
+            interaction.reply({ content: message, ephemeral: true });
         });
     },
 };
