@@ -26,19 +26,27 @@ for (const folder of commandFolders) {
     }
 }
 
-// load events
-const eventsPath = path.join(__dirname, 'events');
-const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
-for (const file of eventFiles) {
-    const filePath = path.join(eventsPath, file);
-    const event = require(filePath);
-    if (event.once) {
-        client.once(event.name, (...args) => event.execute(...args));
-    } else {
-        client.on(event.name, (...args) => event.execute(...args));
+// Function to recursively load event files
+function loadEvents(dir) {
+    const files = fs.readdirSync(dir);
+    for (const file of files) {
+        const filePath = path.join(dir, file);
+        if (fs.statSync(filePath).isDirectory()) {
+            loadEvents(filePath);
+        } else if (file.endsWith('.js')) {
+            const event = require(filePath);
+            if (event.once) {
+                client.once(event.name, (...args) => event.execute(...args));
+            } else {
+                client.on(event.name, (...args) => event.execute(...args));
+            }
+        }
     }
 }
+
+// Load events
+const eventsPath = path.join(__dirname, 'events');
+loadEvents(eventsPath);
 
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);

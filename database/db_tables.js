@@ -83,4 +83,25 @@ function getVotes(guildId) {
     return db;
 }
 
-module.exports = { getBookRatings, getGameRatings, getVotes, getWaterLeaderboard };
+function getNotificationConfig(guildId) {
+    const dbDir = path.join(__dirname, guildId);
+    if (!fs.existsSync(dbDir)) {
+        fs.mkdirSync(dbDir, { recursive: true });
+    }
+    const dbPath = path.join(dbDir, 'database.db');
+    const db = new sqlite3.Database(dbPath);
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS notification_config (
+                                                                   id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                                   guild_id TEXT NOT NULL,
+                                                                   notification_channel_id TEXT,
+                                                                   youtube_channel_id TEXT,
+                                                                   custom_message TEXT,
+                                                                   last_checked_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                                                   last_checked_video_id TEXT
+                )`);
+    });
+    return db;
+}
+
+module.exports = { getBookRatings, getGameRatings, getVotes, getWaterLeaderboard, getNotificationConfig };
