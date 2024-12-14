@@ -13,7 +13,7 @@ module.exports = {
     async execute(client) {
         try{
             checkYoutube();
-            setInterval(checkYoutube, 60000);
+            setInterval(checkYoutube, 900000); // 15 mins interval
         } catch (e) {
             console.log('Caught error in get-latest-video.js', e);
         }
