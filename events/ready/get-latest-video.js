@@ -11,13 +11,17 @@ const youtube = google.youtube({
 module.exports = {
     name: Events.ClientReady,
     async execute(client) {
-        checkYoutube();
-        setInterval(checkYoutube, 60000);
+        try{
+            checkYoutube();
+            setInterval(checkYoutube, 60000);
+        } catch (e) {
+            console.log('Caught error in get-latest-video.js', e);
+        }
 
         async function checkYoutube() {
-            try {
-                const db = getNotificationConfig(config.guildId);
-                db.all(`SELECT * FROM notification_config`, [], async (err, rows) => {
+            const db = getNotificationConfig(config.guildId);
+            db.all(`SELECT * FROM notification_config`, [], async (err, rows) => {
+                try {
                     if (err) {
                         console.error(err);
                         return;
@@ -63,20 +67,23 @@ module.exports = {
                             .setTitle('🎉🦢 NEW VIDEO ALERT! 🦢🎉')
                             .setDescription(`🚀 A brand new video from [**${latestVideo.snippet.channelTitle}**](https://www.youtube.com/watch?v=${latestVideoId}) just dropped! 🦢`)
                             .addFields(
-                                { name: '📺 **Title**', value: `**${latestVideo.snippet.title}**\n\n` },
-                                { name: '🕒 **Published**', value: `**${publishedDate}**\n\n` }
+                                {name: '📺 **Title**', value: `**${latestVideo.snippet.title}**\n\n`},
+                                {name: '🕒 **Published**', value: `**${publishedDate}**\n\n`}
                             )
                             .setImage(latestVideo.snippet.thumbnails.high.url)
                             .setColor(0xE7ACCF);
 
 
-                        channel.send({ embeds: [embed] });
-                        db.run(`UPDATE notification_config SET last_checked_video_id = ?, last_checked_timestamp = ? WHERE guild_id = ?`, [latestVideoId, latestVideoTimestamp, row.guild_id]);
+                        channel.send({embeds: [embed]});
+                        db.run(`UPDATE notification_config
+                                SET last_checked_video_id  = ?,
+                                    last_checked_timestamp = ?
+                                WHERE guild_id = ?`, [latestVideoId, latestVideoTimestamp, row.guild_id]);
                     }
-                });
-            } catch (err) {
-                console.error(err);
-            }
+                } catch (e) {
+                    console.log('Caught error in get-latest-video.js', e);
+                }
+            });
         }
     },
 };
