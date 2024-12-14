@@ -11,11 +11,22 @@ const youtube = google.youtube({
 module.exports = {
     name: Events.ClientReady,
     async execute(client) {
-        try{
-            checkYoutube();
-            setInterval(checkYoutube, 900000); // 15 mins interval
+        try {
+            setInterval(checkTimeAndYoutube, 60000); // Check every minute
         } catch (e) {
             console.log('Caught error in get-latest-video.js', e);
+        }
+
+        async function checkTimeAndYoutube() {
+            const now = new Date();
+            const isDST = now.getTimezoneOffset() < new Date(now.getFullYear(), 0, 1).getTimezoneOffset();
+            const mountainTimeOffset = isDST ? -6 : -7; // Mountain Daylight Time (MDT) is UTC-6, Mountain Standard Time (MST) is UTC-7
+            const currentHour = now.getUTCHours() + mountainTimeOffset;
+            const currentMinute = now.getUTCMinutes();
+
+            if (currentHour === 8 && currentMinute >= 25 && currentMinute <= 35) {
+                checkYoutube();
+            }
         }
 
         async function checkYoutube() {
@@ -67,14 +78,13 @@ module.exports = {
                             .setTitle('🎉🦢 NEW VIDEO ALERT! 🦢🎉')
                             .setDescription(`🚀 A brand new video from [**${latestVideo.snippet.channelTitle}**](https://www.youtube.com/watch?v=${latestVideoId}) just dropped! 🦢`)
                             .addFields(
-                                {name: '📺 **Title**', value: `**${latestVideo.snippet.title}**\n\n`},
-                                {name: '🕒 **Published**', value: `**${publishedDate}**\n\n`}
+                                { name: '📺 **Title**', value: `**${latestVideo.snippet.title}**\n\n` },
+                                { name: '🕒 **Published**', value: `**${publishedDate}**\n\n` }
                             )
                             .setImage(latestVideo.snippet.thumbnails.high.url)
                             .setColor(0xE7ACCF);
 
-
-                        channel.send({embeds: [embed]});
+                        channel.send({ embeds: [embed] });
                         db.run(`UPDATE notification_config
                                 SET last_checked_video_id  = ?,
                                     last_checked_timestamp = ?
