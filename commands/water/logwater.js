@@ -44,7 +44,7 @@ module.exports = {
             if (unit === 'bowl') {
                 message = `Logged 1 bowl of soup.`;
             } else {
-                message = `Logged ${unit === 'ml' ? amount : amount / 29.5735} ${unit === 'ml' ? 'ml of water' : 'fl oz of water'}.`;
+                message = `Logged ${amount} ${unit === 'ml' ? 'ml of water' : 'fl oz of water'}.`;
             }
             interaction.reply({ content: message, ephemeral: true });
         });
