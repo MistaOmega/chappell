@@ -54,7 +54,7 @@ client.once('ready', () => {
         activities: [{
             name: 'With your heart ❤️',
             type: ActivityType.Playing }],
-        status: 'dnd',
+        status: 'online',
     });
 });
 
