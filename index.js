@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { Client, GatewayIntentBits, Collection, ActivityType } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
@@ -50,6 +50,12 @@ loadEvents(eventsPath);
 
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);
+    client.user.setPresence({
+        activities: [{
+            name: 'With your heart ❤️',
+            type: ActivityType.Playing }],
+        status: 'dnd',
+    });
 });
 
 client.on('interactionCreate', async interaction => {
