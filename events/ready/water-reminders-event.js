@@ -2,6 +2,8 @@ const { Events } = require('discord.js');
 const { getWaterReminders } = require('../../database/db_tables');
 const { setInterval } = require('timers');
 
+let reminderIntervals = {};
+
 module.exports = {
     name: Events.ClientReady,
     once: true,
