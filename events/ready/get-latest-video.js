@@ -1,6 +1,6 @@
 const { google } = require('googleapis');
 const { getNotificationConfig } = require('../../database/db_tables');
-const { Events, EmbedBuilder } = require('discord.js');
+const { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const config = require('../../config.json');
 
 const youtube = google.youtube({
@@ -11,6 +11,7 @@ const youtube = google.youtube({
 module.exports = {
     name: Events.ClientReady,
     async execute(client) {
+        checkYoutube();
         try {
             setInterval(checkTimeAndYoutube, 60000); // Check every minute
         } catch (e) {
@@ -84,7 +85,18 @@ module.exports = {
                             .setImage(latestVideo.snippet.thumbnails.high.url)
                             .setColor(0xE7ACCF);
 
-                        channel.send({ embeds: [embed] });
+                        const actionRow = new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setLabel('Watch Video')
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(`https://www.youtube.com/watch?v=${latestVideoId}`),
+                            new ButtonBuilder()
+                                .setLabel('Visit Channel')
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(`https://www.youtube.com/channel/${row.youtube_channel_id}`)
+                        );
+
+                        channel.send({ embeds: [embed], components: [actionRow] });
                         db.run(`UPDATE notification_config
                                 SET last_checked_video_id  = ?,
                                     last_checked_timestamp = ?
