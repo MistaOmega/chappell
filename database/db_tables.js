@@ -85,4 +85,14 @@ function getWaterReminders(guildId) {
     return initializeDatabase(guildId, 'reminders', tableSchema);
 }
 
-module.exports = { getBookRatings, getGameRatings, getVotes, getWaterLeaderboard, getNotificationConfig, getWaterReminders };
+function getTodoTasks(guildId) {
+    const tableSchema = `
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        task TEXT NOT NULL,
+        status TEXT NOT NULL
+    `;
+    return initializeDatabase(guildId, 'todo_tasks', tableSchema);
+}
+
+module.exports = { getBookRatings, getGameRatings, getVotes, getWaterLeaderboard, getNotificationConfig, getWaterReminders, getTodoTasks };
