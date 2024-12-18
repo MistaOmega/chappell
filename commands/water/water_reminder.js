@@ -29,36 +29,47 @@ module.exports = {
                 .setName('stop')
                 .setDescription('Stop drinking water reminders')),
     async execute(interaction) {
-        const subcommand = interaction.options.getSubcommand();
-        const interval = interaction.options.getInteger('interval');
-        const userId = interaction.user.id;
-        const db = getWaterReminders(interaction.guild.id);
+        try {
+            const subcommand = interaction.options.getSubcommand();
+            const interval = interaction.options.getInteger('interval');
+            const userId = interaction.user.id;
+            const db = getWaterReminders(interaction.guild.id);
 
-        if (subcommand === 'start' || subcommand === 'update') {
-            if (reminderIntervals[userId]) {
-                clearInterval(reminderIntervals[userId]);
+            if (subcommand === 'start' || subcommand === 'update') {
+                if (reminderIntervals[userId]) {
+                    clearInterval(reminderIntervals[userId]);
+                }
+
+                const nextReminder = new Date(Date.now() + interval * 60000);
+                reminderIntervals[userId] = setInterval(() => {
+                    interaction.user.send(`It's time to drink water!`);
+                }, interval * 60000);
+                db.run(`INSERT INTO reminders (user_id, interval, next_reminder)
+                        VALUES (?, ?, ?) ON CONFLICT(user_id) DO
+                        UPDATE SET interval = ?, next_reminder = ?`,
+                    [userId, interval, nextReminder.toISOString(), interval, nextReminder.toISOString()]);
+
+                await interaction.reply({
+                    content: `Started drinking water reminders every ${interval} minutes.`,
+                    ephemeral: true
+                });
+            } else if (subcommand === 'stop') {
+                if (reminderIntervals[userId]) {
+                    clearInterval(reminderIntervals[userId]);
+                    delete reminderIntervals[userId];
+
+                    db.run(`DELETE
+                            FROM reminders
+                            WHERE user_id = ?`, [userId]);
+
+                    await interaction.reply({content: 'Stopped drinking water reminders.', ephemeral: true});
+                } else {
+                    await interaction.reply({content: 'No active drinking water reminders to stop.', ephemeral: true});
+                }
             }
-
-            const nextReminder = new Date(Date.now() + interval * 60000);
-            reminderIntervals[userId] = setInterval(() => {
-                interaction.user.send(`It's time to drink water!`);
-            }, interval * 60000);
-            db.run(`INSERT INTO reminders (user_id, interval, next_reminder) VALUES (?, ?, ?)
-                    ON CONFLICT(user_id) DO UPDATE SET interval = ?, next_reminder = ?`,
-                [userId, interval, nextReminder.toISOString(), interval, nextReminder.toISOString()]);
-
-            await interaction.reply({ content: `Started drinking water reminders every ${interval} minutes.`, ephemeral: true });
-        } else if (subcommand === 'stop') {
-            if (reminderIntervals[userId]) {
-                clearInterval(reminderIntervals[userId]);
-                delete reminderIntervals[userId];
-
-                db.run(`DELETE FROM reminders WHERE user_id = ?`, [userId]);
-
-                await interaction.reply({ content: 'Stopped drinking water reminders.', ephemeral: true });
-            } else {
-                await interaction.reply({ content: 'No active drinking water reminders to stop.', ephemeral: true });
-            }
+        } catch (error) {
+            console.error(error);
+            await interaction.reply({content: 'There was an error while executing this command!', ephemeral: true});
         }
     },
 };
