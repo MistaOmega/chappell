@@ -1,10 +1,17 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, PermissionsBitField } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription('Lists all available commands'),
+        .setDescription('Lists all available commands')
+        .addBooleanOption(option =>
+            option.setName('global')
+                .setDescription('Show help to everyone [ This will only work for mods ]')
+        ),
     async execute(interaction) {
+        const global = interaction.options.getBoolean('global');
+        const hasManageChannels = interaction.member.permissions.has(PermissionsBitField.Flags.ManageChannels);
+
         const commands = interaction.client.commands.map(command => ({
             name: command.data.name,
             description: command.data.description,
@@ -26,6 +33,7 @@ module.exports = {
             embed.addFields({ name: `/${command.name}`, value: commandDescription });
         });
 
-        await interaction.reply({ embeds: [embed] });
+        const isEphemeral = !(global && hasManageChannels);
+        await interaction.reply({ embeds: [embed], ephemeral: isEphemeral });
     },
 };
