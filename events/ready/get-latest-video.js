@@ -11,7 +11,6 @@ const youtube = google.youtube({
 module.exports = {
     name: Events.ClientReady,
     async execute(client) {
-        checkYoutube();
         try {
             setInterval(checkTimeAndYoutube, 60000); // Check every minute
         } catch (e) {
