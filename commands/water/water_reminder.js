@@ -1,8 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { setInterval, clearInterval } = require('timers');
 const { getWaterReminders } = require('../../database/db_tables');
-
-let reminderIntervals = {};
+const reminderIntervals = require('../../utils/reminder-intervals');
 
 module.exports = {
     data: new SlashCommandBuilder()
