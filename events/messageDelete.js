@@ -1,6 +1,15 @@
 const { Events, EmbedBuilder, AuditLogEvent } = require('discord.js');
 const { getModerationConfig } = require('../database/db_tables');
 
+// Track how many times we've used each audit log entry (for bulk deletions)
+// Key: audit log entry ID, Value: number of times used
+const auditLogUsage = new Map();
+
+// Clean up old entries every 5 minutes
+setInterval(() => {
+    auditLogUsage.clear();
+}, 5 * 60 * 1000);
+
 module.exports = {
     name: Events.MessageDelete,
     async execute(message) {
@@ -23,25 +32,46 @@ module.exports = {
                 if (!row || !row.moderation_channel_id) return;
 
                 try {
+                    // Wait 500ms for Discord to create the audit log entry
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
                     // Check audit logs to see if a moderator deleted this message
                     const fetchedLogs = await message.guild.fetchAuditLogs({
-                        limit: 1,
+                        limit: 10,
                         type: AuditLogEvent.MessageDelete,
                     });
 
-                    const deletionLog = fetchedLogs.entries.first();
+                    // Find the most recent audit log entry that matches this deletion
+                    let deletionLog = null;
+                    const now = Date.now();
 
-                    // If no audit log entry or the deletion is old, it's likely a self-deletion
+                    for (const entry of fetchedLogs.entries.values()) {
+                        const timeDiff = now - entry.createdTimestamp;
+                        const channelId = entry.extra?.channel?.id || entry.extra?.channelId;
+                        const count = entry.extra?.count || 1;
+                        const usedCount = auditLogUsage.get(entry.id) || 0;
+
+                        // Skip if we've already used this audit log entry up to its count
+                        if (usedCount >= count) continue;
+
+                        // For bulk deletions, the timestamp doesn't update, so be more lenient with time
+                        const maxAge = count > 1 ? 60000 : 3000; // 60 seconds for bulk, 3 seconds for single
+
+                        // Check if this entry matches and in the same channel
+                        if (timeDiff < maxAge && channelId === message.channel.id && entry.target.id === message.author?.id) {
+                            deletionLog = entry;
+                            break;
+                        }
+                    }
+
+                    // If no matching audit log entry, it's likely a self-deletion
                     if (!deletionLog) return;
 
-                    const { executor, target, createdTimestamp } = deletionLog;
+                    // Increment usage count for this audit log
+                    const currentUsage = auditLogUsage.get(deletionLog.id) || 0;
+                    auditLogUsage.set(deletionLog.id, currentUsage + 1);
 
-                    // Check if the deletion happened recently (within 2 seconds)
-                    const timeDiff = Date.now() - createdTimestamp;
-                    if (timeDiff > 2000) return;
-
-                    // Check if the moderator deleted someone else's message
-                    if (target.id !== message.author?.id) return;
+                    const { executor } = deletionLog;
 
                     // Don't log if user deleted their own message
                     if (executor.id === message.author?.id) return;
