@@ -5,13 +5,24 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('moderation-setup')
         .setDescription('Set the moderation log channel for viewing deleted messages and moderation events.')
-        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addChannelOption(option =>
             option.setName('log-channel')
                 .setDescription('The channel to send moderation logs to.')
                 .setRequired(true)),
     async execute(interaction) {
         await interaction.deferReply({ ephemeral: true });
+
+        // Check if user has Administrator permission or the temporary allowed role
+        const allowedRoleId = '1276782482372558890';
+        const hasAdminPermission = interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+        const hasAllowedRole = interaction.member.roles.cache.has(allowedRoleId);
+
+        if (!hasAdminPermission && !hasAllowedRole) {
+            return interaction.editReply({
+                content: 'You do not have permission to use this command. Administrator permission is required.',
+                ephemeral: true
+            });
+        }
 
         const logChannel = interaction.options.getChannel('log-channel');
         const db = getModerationConfig(interaction.guild.id);
