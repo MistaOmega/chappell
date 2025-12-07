@@ -1,6 +1,8 @@
 const { Events, EmbedBuilder, AuditLogEvent } = require('discord.js');
 const { getModerationConfig } = require('../database/db_tables');
 
+console.log('[MessageDelete] Event file loaded successfully');
+
 // Track how many times we've used each audit log entry (for bulk deletions)
 // Key: audit log entry ID, Value: number of times used
 const auditLogUsage = new Map();

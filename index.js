@@ -21,8 +21,10 @@ function loadEvents(dir) {
             const event = require(filePath);
             if (event.once) {
                 client.once(event.name, (...args) => event.execute(...args));
+                console.log(`[EventLoader] Registered ONCE event: ${event.name} from ${filePath}`);
             } else {
                 client.on(event.name, (...args) => event.execute(...args));
+                console.log(`[EventLoader] Registered ON event: ${event.name} from ${filePath}`);
             }
         }
     }
@@ -35,6 +37,10 @@ loadEvents(eventsPath);
 
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);
+    console.log(`[Intents] Bot intents: ${client.options.intents.bitfield}`);
+    console.log(`[Intents] Has GuildMessages: ${client.options.intents.has(GatewayIntentBits.GuildMessages)}`);
+    console.log(`[Intents] Has MessageContent: ${client.options.intents.has(GatewayIntentBits.MessageContent)}`);
+    console.log(`[Intents] Has GuildModeration: ${client.options.intents.has(GatewayIntentBits.GuildModeration)}`);
     client.user.setPresence({
         activities: [{
             name: 'With your heart ❤️',
