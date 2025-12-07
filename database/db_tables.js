@@ -85,4 +85,13 @@ function getWaterReminders(guildId) {
     return initializeDatabase(guildId, 'reminders', tableSchema);
 }
 
-module.exports = { getBookRatings, getGameRatings, getVotes, getWaterLeaderboard, getNotificationConfig, getWaterReminders };
+function getModerationConfig(guildId) {
+    const tableSchema = `
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id TEXT NOT NULL,
+        moderation_channel_id TEXT
+    `;
+    return initializeDatabase(guildId, 'moderation_config', tableSchema);
+}
+
+module.exports = { getBookRatings, getGameRatings, getVotes, getWaterLeaderboard, getNotificationConfig, getWaterReminders, getModerationConfig };
