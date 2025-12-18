@@ -26,21 +26,9 @@ module.exports = {
             // Delete the original message
             await message.delete();
 
-            // Send the cleaned message as the user
-            const webhooks = await message.channel.fetchWebhooks();
-            let webhook = webhooks.find(wh => wh.owner.id === message.client.user.id);
-
-            if (!webhook) {
-                webhook = await message.channel.createWebhook({
-                    name: 'URL Cleaner',
-                    reason: 'Clean Instagram URLs with tracking parameters'
-                });
-            }
-
-            await webhook.send({
-                content: cleanedContent,
-                username: message.author.username,
-                avatarURL: message.author.displayAvatarURL()
+            // Send the cleaned message as the bot
+            await message.channel.send({
+                content: `${message.author}: ${cleanedContent}`
             });
 
         } catch (error) {
